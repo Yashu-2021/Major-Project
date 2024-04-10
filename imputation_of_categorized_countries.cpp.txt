@@ -1,0 +1,120 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+using namespace std;
+
+bool search(vector<string> cat, string code)
+{
+    for (int i = 0; i < cat.size(); i++)
+    {
+        if (code == cat[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+int main()
+{
+
+    ifstream csv_file("data.csv");
+    vector<string> code;
+    vector<vector<double>> value;
+    string line;
+    int count = 0;
+    while (std::getline(csv_file, line))
+    {
+        count++;
+        stringstream ss(line);
+        vector<double> row;
+        string cell;
+        int it = 0;
+        if (count == 1)
+        {
+            continue;
+        }
+        while (getline(ss, cell, ','))
+        {
+            // row.push_back(cell);
+            if (it == 0)
+            {
+                code.push_back(cell);
+            }
+            else
+            {
+                row.push_back(stod(cell));
+            }
+            it++;
+        }
+        value.push_back(row);
+    }
+    csv_file.close();
+
+    vector<vector<string>> catigory{
+        {"ALB", "ARE", "ARG", "AUT", "BRN", "CHE", "CHL", "ESP", "GAB", "IRQ", "ISR", "JOR", "JPN", "KOR", "MEX", "MMR", "NLD", "PER", "PRT", "SGP", "VEN"},
+        {"BGR", "BHR", "BOL", "COG", "CUB", "CYM", "DZA", "EGY", "FRA", "GNQ", "IRL", "ITA", "MAR", "POL", "PYF", "ROU", "RUS", "SUR", "TTO"},
+        {"BGD", "BRA", "BRB", "CHN", "COL", "IDN", "IND", "IRN", "MYS", "NGA", "PAK", "PHL", "SYR", "THA", "TUN", "TUR", "VNM"},
+        {"ABW", "AGO", "BMU", "FRO", "GIB", "GRL", "LUX", "MAC", "NCL", "SEN", "YEM"},
+        {"AFG", "BEL", "CAN", "KWT", "LBY", "QAT", "USA"},
+        {"AUS", "DNK", "GBR", "NZL", "SWE", "URY", "ZAF"},
+        {"BLZ", "GMB", "MOZ", "PNG", "TGO", "TZA"},
+        {"CIV", "CMR", "DOM", "ECU", "GHA", "RWA"},
+        {"FIN", "NOR", "SAU"},
+        {"COD", "HKG"},
+        {"GRC", "HUN"}};
+
+    for (int i = 0; i < catigory.size(); i++)
+    {
+        for (int indicator = 0; indicator < 7; indicator++)
+        {
+            for (int it = 0; it < value[0].size(); it++)
+            {
+                double mean = 0;
+                int count = 0;
+                for (int j = indicator; j < value.size(); j+=7)
+                {
+                    if (search(catigory[i], code[j]))
+                    {
+                        mean += value[j][it];
+                        count++;
+                    }
+                }
+                mean = mean / count;
+                for (int j = indicator; j < value.size(); j+=7)
+                {
+                    if (search(catigory[i], code[j]))
+                    {
+                        if (value[j][it] == 0)
+                        {
+                            value[j][it] = mean;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    ofstream myfile;
+    myfile.open("updated.csv");
+    for (int i = 0; i < value.size(); i++)
+    {
+        // cout << "hi";
+        myfile << code[i];
+        myfile << ",";
+        for (int j = 0; j < value[i].size(); j++)
+        {
+            myfile << value[i][j];
+            if (j != value[i].size() - 1)
+            {
+                myfile << ",";
+            }
+        }
+        myfile << endl;
+    }
+    myfile.close();
+
+    return 0;
+}
